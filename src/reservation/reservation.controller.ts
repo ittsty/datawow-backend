@@ -27,4 +27,8 @@ export class ReservationController {
   async allReservation() {
     return await this.reservationService.getAllReservations();
   }
+  @Get('stats')
+  getStats() {
+    return this.reservationService.getStats();
+  }
 }

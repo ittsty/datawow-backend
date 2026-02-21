@@ -81,4 +81,22 @@ export class ReservationService {
   getAllReservations() {
     return reservationHistory;
   }
+
+  getStats() {
+    const totalSeats = concerts.reduce((sum, c) => sum + c.totalSeats, 0);
+
+    const reserveCount = reservationHistory.filter(
+      (r) => r.action === 'RESERVE',
+    ).length;
+
+    const cancelCount = reservationHistory.filter(
+      (r) => r.action === 'CANCEL',
+    ).length;
+
+    return {
+      totalSeats,
+      reserveCount,
+      cancelCount,
+    };
+  }
 }
