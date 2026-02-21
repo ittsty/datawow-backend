@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
-import { ConcertService } from "./concert.service";
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { ConcertService } from './concert.service';
 
-@Controller("concert")
+@Controller('concert')
 export class ConcertController {
   constructor(private concertService: ConcertService) {}
 
@@ -10,20 +10,20 @@ export class ConcertController {
     return this.concertService.findAll();
   }
 
-  @Post("create")
+  @Post('create')
   create(
     @Body()
     body: {
       name: string;
       description: string;
       totalSeats: number;
-    }
+    },
   ) {
     return this.concertService.create(body);
   }
 
-  @Delete(":id")
-  delete(@Param("id") id: string) {
+  @Delete(':id')
+  delete(@Param('id') id: string) {
     return this.concertService.delete(id);
   }
 }

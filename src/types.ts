@@ -22,6 +22,7 @@ export type ReservationHistory = {
   id: string;
   userId: string;
   concertId: string;
+  concertName: string;
   action: ActionType;
   createdAt: Date;
 };

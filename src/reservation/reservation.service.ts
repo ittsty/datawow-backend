@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { concerts, reservationHistory } from '../mock/bd';
+import { concerts, reservations, reservationHistory } from '../mock/bd';
 import { randomUUID } from 'crypto';
 import { ActionType } from '../types';
 
@@ -12,12 +12,12 @@ import { ActionType } from '../types';
 export class ReservationService {
   reserve(userId: string, concertId: string) {
     const concert = concerts.find((c) => c.id === concertId);
-
+    const concertIndex = concerts.findIndex((c) => c.id === concertId);
     if (!concert) throw new NotFoundException('Concert not found');
     if (concert.reservedSeats >= concert.totalSeats)
       throw new BadRequestException('No seats available');
 
-    const exists = reservationHistory.find(
+    const exists = reservations.find(
       (r) => r.userId === userId && r.concertId === concertId,
     );
     if (exists) throw new BadRequestException('Already reserved');
@@ -26,10 +26,12 @@ export class ReservationService {
       id: randomUUID(),
       userId,
       concertId,
+      concertName: concerts[concertIndex].name,
       action: ActionType.RESERVE,
       createdAt: new Date(),
     };
 
+    reservations.push(history);
     reservationHistory.push(history);
     concert.reservedSeats++;
 
@@ -37,31 +39,45 @@ export class ReservationService {
   }
 
   cancel(userId: string, concertId: string) {
-    const index = reservationHistory.findIndex(
+    const index = reservations.findIndex(
       (r) => r.userId === userId && r.concertId === concertId,
     );
-
+    const concert = concerts.find((c) => c.id === concertId);
+    const concertIndex = concerts.findIndex((c) => c.id === concertId);
     if (index === -1) throw new NotFoundException('Reservation not found');
     const history = {
       id: randomUUID(),
       userId,
       concertId,
+      concertName: concerts[concertIndex].name,
       action: ActionType.CANCEL,
       createdAt: new Date(),
     };
 
+    reservations.splice(index, 1);
     reservationHistory.push(history);
-    const concert = concerts.find((c) => c.id === concertId);
     if (!concert) throw new NotFoundException('Concert not found');
     concert.reservedSeats--;
 
     return { message: 'Canceled successfully' };
   }
-
   getMyReservations(userId: string) {
-    return reservationHistory.filter((r) => r.userId === userId);
-  }
+    const userHistory = reservations.filter((r) => r.userId === userId);
 
+    const activeReservations = new Map<string, boolean>();
+
+    userHistory.forEach((h) => {
+      if (h.action === 'RESERVE') {
+        activeReservations.set(h.concertId, true);
+      }
+
+      if (h.action === 'CANCEL') {
+        activeReservations.delete(h.concertId);
+      }
+    });
+
+    return Array.from(activeReservations.keys());
+  }
   getAllReservations() {
     return reservationHistory;
   }

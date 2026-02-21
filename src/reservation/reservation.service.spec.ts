@@ -52,23 +52,19 @@ describe('ReservationService', () => {
     });
 
     it('should throw if concert not found', () => {
-      expect(() =>
-        service.reserve(userId, '999'),
-      ).toThrow(NotFoundException);
+      expect(() => service.reserve(userId, '999')).toThrow(NotFoundException);
     });
 
     it('should not allow double reservation', () => {
       service.reserve(userId, concertId);
 
-      expect(() =>
-        service.reserve(userId, concertId),
-      ).toThrow(BadRequestException);
+      expect(() => service.reserve(userId, concertId)).toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw if no seats available', () => {
-      expect(() =>
-        service.reserve(userId, '2'),
-      ).toThrow(BadRequestException);
+      expect(() => service.reserve(userId, '2')).toThrow(BadRequestException);
     });
   });
 
@@ -92,9 +88,9 @@ describe('ReservationService', () => {
     });
 
     it('should throw if reservation not found', () => {
-      expect(() =>
-        service.cancel(userId, concertId),
-      ).toThrow(NotFoundException);
+      expect(() => service.cancel(userId, concertId)).toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw if concert not found during cancel', () => {
@@ -102,12 +98,11 @@ describe('ReservationService', () => {
 
       concerts.length = 0;
 
-      expect(() =>
-        service.cancel(userId, concertId),
-      ).toThrow(NotFoundException);
+      expect(() => service.cancel(userId, concertId)).toThrow(
+        NotFoundException,
+      );
     });
   });
-
 
   describe('getMyReservations', () => {
     it('should return only user reservations', () => {
@@ -120,7 +115,6 @@ describe('ReservationService', () => {
       expect(result[0].userId).toBe('u1');
     });
   });
-
 
   describe('getAllReservations', () => {
     it('should return all reservations', () => {

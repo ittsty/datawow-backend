@@ -1,12 +1,11 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { randomUUID } from "crypto";
-import { concerts } from "src/mock/bd";
-import { Concert } from "src/types";
+import { randomUUID } from 'crypto';
+import { concerts } from 'src/mock/bd';
+import { Concert } from 'src/types';
 
 @Injectable()
 export class ConcertService {
-
   findAll(): Concert[] {
     return concerts;
   }
@@ -28,11 +27,10 @@ export class ConcertService {
   }
 
   delete(id: string) {
-    const index = concerts.findIndex(c => c.id === id);
-    if (index === -1)
-      throw new NotFoundException("Concert not found");
+    const index = concerts.findIndex((c) => c.id === id);
+    if (index === -1) throw new NotFoundException('Concert not found');
 
     concerts.splice(index, 1);
-    return { message: "Deleted successfully" };
+    return { message: 'Deleted successfully' };
   }
 }

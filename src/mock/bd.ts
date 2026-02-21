@@ -1,19 +1,6 @@
 import { randomUUID } from 'crypto';
 import { ActionType, Concert, ReservationHistory, User } from '../types';
 
-export const users: User[] = [
-  {
-    id: 'u1',
-    email: 'admin@test.com',
-    role: 'ADMIN',
-  },
-  {
-    id: 'u2',
-    email: 'user@test.com',
-    role: 'USER',
-  },
-];
-
 export const concerts: Concert[] = [
   {
     id: 'c1',
@@ -37,11 +24,13 @@ export const concerts: Concert[] = [
     reservedSeats: 2,
   },
 ];
-export const reservationHistory: ReservationHistory[] = [
+
+export const reservations: ReservationHistory[] = [
   {
     id: randomUUID(),
     userId: 'u2',
     concertId: 'c1',
+    concertName: 'Taylor Swift Eras Tour',
     action: ActionType.RESERVE,
     createdAt: new Date('2024-09-12T10:39:20'),
   },
@@ -49,6 +38,7 @@ export const reservationHistory: ReservationHistory[] = [
     id: randomUUID(),
     userId: 'u2',
     concertId: 'c1',
+    concertName: 'Taylor Swift Eras Tour',
     action: ActionType.CANCEL,
     createdAt: new Date('2024-09-12T15:00:00'),
   },
@@ -56,7 +46,35 @@ export const reservationHistory: ReservationHistory[] = [
     id: randomUUID(),
     userId: 'u1',
     concertId: 'c2',
+    concertName: 'Taylor Swift Eras Tour',
     action: ActionType.RESERVE,
     createdAt: new Date('2024-09-12T18:00:00'),
-  }
+  },
+];
+
+export const reservationHistory: ReservationHistory[] = [
+  {
+    id: randomUUID(),
+    userId: 'u2',
+    concertId: 'c1',
+    concertName: 'Taylor Swift Eras Tour',
+    action: ActionType.RESERVE,
+    createdAt: new Date('2024-09-12T10:39:20'),
+  },
+  {
+    id: randomUUID(),
+    userId: 'u2',
+    concertId: 'c1',
+    concertName: 'Taylor Swift Eras Tour',
+    action: ActionType.CANCEL,
+    createdAt: new Date('2024-09-12T15:00:00'),
+  },
+  {
+    id: randomUUID(),
+    userId: 'u1',
+    concertId: 'c2',
+    concertName: 'Taylor Swift Eras Tour',
+    action: ActionType.RESERVE,
+    createdAt: new Date('2024-09-12T18:00:00'),
+  },
 ];
