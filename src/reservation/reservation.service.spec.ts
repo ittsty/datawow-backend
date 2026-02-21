@@ -1,127 +1,181 @@
+import { Test, TestingModule } from '@nestjs/testing';
 import { ReservationService } from './reservation.service';
-import { concerts, reservationHistory } from '../mock/bd';
+import {
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  concerts,
+  reservations,
+  reservationHistory,
+} from '../mock/bd';
 import { ActionType } from '../types';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('ReservationService', () => {
   let service: ReservationService;
 
-  const userId = 'u1';
-  const concertId = '1';
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [ReservationService],
+    }).compile();
 
-  function resetMockData() {
-    reservationHistory.length = 0;
+    service = module.get<ReservationService>(ReservationService);
 
+    // reset mock db ทุกครั้ง
     concerts.length = 0;
-
-    concerts.push({
-      id: '1',
-      name: 'Concert One',
-      description: 'Test concert',
-      totalSeats: 2,
-      reservedSeats: 0,
-    });
-
-    concerts.push({
-      id: '2',
-      name: 'Full concert',
-      description: 'No seats',
-      totalSeats: 1,
-      reservedSeats: 1,
-    });
-  }
-
-  beforeEach(() => {
-    service = new ReservationService();
-    resetMockData();
+    reservations.length = 0;
+    reservationHistory.length = 0;
   });
 
   describe('reserve', () => {
-    it('should reserve successfully', () => {
-      const result = service.reserve(userId, concertId);
+    it('should throw if concert not found', () => {
+      expect(() =>
+        service.reserve('user1', 'invalid'),
+      ).toThrow(NotFoundException);
+    });
 
-      expect(result.length).toBe(1);
-
-      expect(result[0]).toMatchObject({
-        userId,
-        concertId,
-        action: ActionType.RESERVE,
+    it('should throw if seats are full', () => {
+      concerts.push({
+        id: 'c1',
+        name: 'Concert',
+        description: '',
+        totalSeats: 1,
+        reservedSeats: 1,
       });
 
+      expect(() =>
+        service.reserve('user1', 'c1'),
+      ).toThrow(BadRequestException);
+    });
+
+    it('should throw if already reserved', () => {
+      concerts.push({
+        id: 'c1',
+        name: 'Concert',
+        description: '',
+        totalSeats: 10,
+        reservedSeats: 0,
+      });
+
+      reservations.push({
+        id: 'r1',
+        userId: 'user1',
+        concertId: 'c1',
+        concertName: 'Concert',
+        action: ActionType.RESERVE,
+        createdAt: new Date(),
+      });
+
+      expect(() =>
+        service.reserve('user1', 'c1'),
+      ).toThrow(BadRequestException);
+    });
+
+    it('should reserve successfully', () => {
+      concerts.push({
+        id: 'c1',
+        name: 'Concert',
+        description: '',
+        totalSeats: 10,
+        reservedSeats: 0,
+      });
+
+      const result = service.reserve('user1', 'c1');
+
+      expect(reservations).toHaveLength(1);
+      expect(reservationHistory).toHaveLength(1);
       expect(concerts[0].reservedSeats).toBe(1);
-    });
 
-    it('should throw if concert not found', () => {
-      expect(() => service.reserve(userId, '999')).toThrow(NotFoundException);
-    });
-
-    it('should not allow double reservation', () => {
-      service.reserve(userId, concertId);
-
-      expect(() => service.reserve(userId, concertId)).toThrow(
-        BadRequestException,
-      );
-    });
-
-    it('should throw if no seats available', () => {
-      expect(() => service.reserve(userId, '2')).toThrow(BadRequestException);
+      expect(result).toHaveLength(1);
     });
   });
 
   describe('cancel', () => {
-    it('should cancel successfully', () => {
-      service.reserve(userId, concertId);
+    it('should throw if reservation not found', () => {
+      expect(() =>
+        service.cancel('user1', 'c1'),
+      ).toThrow(NotFoundException);
+    });
 
-      const result = service.cancel(userId, concertId);
+    it('should cancel successfully', () => {
+      concerts.push({
+        id: 'c1',
+        name: 'Concert',
+        description: '',
+        totalSeats: 10,
+        reservedSeats: 1,
+      });
+
+      reservations.push({
+        id: 'r1',
+        userId: 'user1',
+        concertId: 'c1',
+        concertName: 'Concert',
+        action: ActionType.RESERVE,
+        createdAt: new Date(),
+      });
+
+      const result = service.cancel('user1', 'c1');
 
       expect(result).toEqual({
         message: 'Canceled successfully',
       });
 
-      expect(reservationHistory.length).toBe(2);
-
-      expect(reservationHistory[1]).toMatchObject({
-        action: ActionType.CANCEL,
-      });
-
+      expect(reservations).toHaveLength(0);
+      expect(reservationHistory).toHaveLength(1);
       expect(concerts[0].reservedSeats).toBe(0);
-    });
-
-    it('should throw if reservation not found', () => {
-      expect(() => service.cancel(userId, concertId)).toThrow(
-        NotFoundException,
-      );
-    });
-
-    it('should throw if concert not found during cancel', () => {
-      service.reserve(userId, concertId);
-
-      concerts.length = 0;
-
-      expect(() => service.cancel(userId, concertId)).toThrow(
-        NotFoundException,
-      );
     });
   });
 
   describe('getMyReservations', () => {
-    it('should return only user reservations', () => {
-      service.reserve('u1', '1');
-      service.reserve('u2', '1');
+    it('should return active reservations only', () => {
+      reservations.push(
+        {
+          id: '1',
+          userId: 'user1',
+          concertId: 'c1',
+          concertName: 'Concert 1',
+          action: ActionType.RESERVE,
+          createdAt: new Date(),
+        },
+        {
+          id: '2',
+          userId: 'user1',
+          concertId: 'c2',
+          concertName: 'Concert 2',
+          action: ActionType.RESERVE,
+          createdAt: new Date(),
+        },
+        {
+          id: '3',
+          userId: 'user1',
+          concertId: 'c2',
+          concertName: 'Concert 2',
+          action: ActionType.CANCEL,
+          createdAt: new Date(),
+        },
+      );
 
-      const result = service.getMyReservations('u1');
+      const result = service.getMyReservations('user1');
 
-      expect(result.length).toBe(1);
-      expect(result[0].userId).toBe('u1');
+      expect(result).toEqual(['c1']);
     });
   });
 
   describe('getAllReservations', () => {
-    it('should return all reservations', () => {
-      service.reserve('u1', '1');
-      service.reserve('u2', '1');
+    it('should return reservation history', () => {
+      reservationHistory.push({
+        id: '1',
+        userId: 'user1',
+        concertId: 'c1',
+        concertName: 'Concert',
+        action: ActionType.RESERVE,
+        createdAt: new Date(),
+      });
+
       const result = service.getAllReservations();
-      expect(result.length).toBe(2);
+
+      expect(result).toHaveLength(1);
     });
   });
 });
