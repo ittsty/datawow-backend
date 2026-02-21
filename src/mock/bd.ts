@@ -1,4 +1,5 @@
-import { Concert, Reservation, User } from '../types';
+import { randomUUID } from 'crypto';
+import { ActionType, Concert, ReservationHistory, User } from '../types';
 
 export const users: User[] = [
   {
@@ -15,19 +16,47 @@ export const users: User[] = [
 
 export const concerts: Concert[] = [
   {
-    id: '1',
-    name: 'Concert One',
-    description: 'testing 123',
+    id: 'c1',
+    name: 'Blackpink World Tour',
+    description: 'Live in Bangkok 2026',
     totalSeats: 500,
-    reservedSeats: 100,
+    reservedSeats: 2,
   },
   {
-    id: '2',
-    name: 'Concert two',
-    description: 'testing 123dsadsadasdasda',
-    totalSeats: 500,
-    reservedSeats: 500,
+    id: 'c2',
+    name: 'Taylor Swift Eras Tour',
+    description: 'Live in Phuket',
+    totalSeats: 300,
+    reservedSeats: 1,
+  },
+  {
+    id: 'c3',
+    name: 'หมดแล้ว Concert',
+    description: 'Sold out concert',
+    totalSeats: 2,
+    reservedSeats: 2,
   },
 ];
-
-export const reservations: Reservation[] = [];
+export const reservationHistory: ReservationHistory[] = [
+  {
+    id: randomUUID(),
+    userId: 'u2',
+    concertId: 'c1',
+    action: ActionType.RESERVE,
+    createdAt: new Date('2024-09-12T10:39:20'),
+  },
+  {
+    id: randomUUID(),
+    userId: 'u2',
+    concertId: 'c1',
+    action: ActionType.CANCEL,
+    createdAt: new Date('2024-09-12T15:00:00'),
+  },
+  {
+    id: randomUUID(),
+    userId: 'u1',
+    concertId: 'c2',
+    action: ActionType.RESERVE,
+    createdAt: new Date('2024-09-12T18:00:00'),
+  }
+];

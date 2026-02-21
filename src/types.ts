@@ -1,4 +1,8 @@
 export type Role = 'ADMIN' | 'USER';
+export enum ActionType{
+  RESERVE = 'RESERVE',
+  CANCEL = 'CANCEL',
+}
 
 export type User = {
   id: string;
@@ -14,8 +18,10 @@ export type Concert = {
   reservedSeats: number;
 };
 
-export type Reservation = {
+export type ReservationHistory = {
   id: string;
   userId: string;
   concertId: string;
+  action: ActionType;
+  createdAt: Date;
 };
